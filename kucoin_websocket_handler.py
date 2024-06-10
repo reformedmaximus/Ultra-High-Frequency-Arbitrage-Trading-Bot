@@ -4,6 +4,7 @@ import json
 import time 
 import threading
 import logging 
+import datetime
 
 
 logging.basicConfig(level=logging.INFO)
@@ -22,11 +23,21 @@ async def start_kucoin_websocket(api):
 
         while True: 
             try:
-                response = await ws.recv() #listening for incoming messages recv is receive 
-                message = json.loads(response)
+                message = await ws.recv() #listening for incoming messages recv is receive 
+                data = json.loads(message) #convert json string into nested python dictionnary ( collection of key-value pairs )
+                if 'data' in data and 'price' in data['data']:
+                  price = data['data']['price']
+                  timestamp = datetime.datetime.now().isoformat()
+                  log_message = f"{timestamp} KuCoin BTC/USDT price: {price}\n"
+                  print(log_message)
+                  with open("bitcoin_price_data_kucoin.txt","a") as file:
+                     file.write(log_message)
                 #print("received message :", message).
-                logging.info(f"********Received message from Kucoin********: {message}")
-                await handle_ping(ws, message)
+                #logging.info(f"********Received message from Kucoin********: {message}")
+                  await handle_ping(ws, message)
+                else:
+                    logging.error(f"unexpected message structure : {data}")
+                     
             except websockets.exceptions.ConnectionClosed:
                 print("Connection closed, attempting to reconnect...")    
                 break #exit loop to reconnect outside this block 

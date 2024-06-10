@@ -1,6 +1,7 @@
 import asyncio 
 import websockets
 import json 
+import datetime
 
 
 async def start_binance_websocket():
@@ -8,18 +9,31 @@ async def start_binance_websocket():
     async with websockets.connect(url, ping_interval=None) as websocket: #disabled automatic ping management by websockets library 
         print("connected to binance websocket")
         while True:
-            try:
+            try:    
                 message = await websocket.recv()
-                if message is None:
+                data = json.loads(message) #convert json string into python data structure
+                if 'p' in data: #check if price is in the message
+                    price = data['p']
+                    timestamp = datetime.datetime.now().isoformat()
+                    log_message = f"{timestamp} Binance BTC/USDT price: {price} \n"
+                    print(log_message)
+                    with open("bitcoin_price_data_binance.txt","a") as file:
+                         file.write(log_message)
+                #responding to pings manually 
+                if 'ping' in data:
+                     await websocket.send(json.dumps({"pong": data['ping']}))
+            except Exception as e:
+                print(f"error occured : {e}")
+
+
+"""if message is None:
                     #check if its a ping frame: 
                     await websocket.pong() # send a pong
                     print("pong sent in response to a ping in binance")
                 else: 
                     #handle normal messages
                     response =json.loads(message) #convert json string into python data structure
-                    print("********Received message from Binance********:", response)
-            except websockets.ConnectionClosed as e:
-                print(f"connection closed with error : {e}")
-                break #reconnect         
+                    print("********Received message from Binance********:", response)"""
+                   
         
         
