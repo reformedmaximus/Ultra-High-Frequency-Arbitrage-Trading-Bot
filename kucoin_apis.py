@@ -5,12 +5,13 @@ import hmac
 import hashlib
 import json
 import requests
+import os 
 
 class KuCoinAPI:
-    def __init__(self, api_key, api_secret, api_passphrase):
-        self.api_key = api_key
-        self.api_secret = api_secret
-        self.api_passphrase = api_passphrase
+    def __init__(self):
+        self.api_key = os.getenv('API_KEY')
+        self.api_secret = os.getenv('API_SECRET')
+        self.api_passphrase = os.getenv('API_PASSPHRASE')
         self.base_url = 'https://api.kucoin.com'
 
     def sign(self, method, endpoint, body=None):
