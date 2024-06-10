@@ -25,7 +25,7 @@ async def start_kucoin_websocket(api):
                 response = await ws.recv() #listening for incoming messages recv is receive 
                 message = json.loads(response)
                 #print("received message :", message).
-                logging.info(f"Received message: {message}")
+                logging.info(f"********Received message from Kucoin********: {message}")
                 await handle_ping(ws, message)
             except websockets.exceptions.ConnectionClosed:
                 print("Connection closed, attempting to reconnect...")    
