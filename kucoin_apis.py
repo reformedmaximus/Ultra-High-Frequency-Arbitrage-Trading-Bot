@@ -57,13 +57,7 @@ class KuCoinAPI:
         response = requests.post(url, headers=headers)
         return response.json() if response.status_code == 200 else None 
 
-# Usage
-api_key = ""
-api_secret = ""
-api_passphrase = ""
-api = KuCoinAPI(api_key, api_secret, api_passphrase)
-#btc_stats = api.get_24hr_stats('BTC-USDT')
-#print(btc_stats)
+
 
     
  
