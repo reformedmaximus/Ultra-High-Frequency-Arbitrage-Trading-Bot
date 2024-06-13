@@ -21,8 +21,9 @@ def update_price_and_compare_callback(exchange, price):
    if binance['price'] is not None and kucoin['price'] is not None:
       time_diff =abs((binance['time'] - kucoin['time']).total_seconds())
       price_diff = binance ['price']-kucoin['price']
-      print(f"Binance: {binance['price']}, Kucoin: {kucoin['price']}, Time Diff : {time_diff}, Price Diff : {price_diff}")
-
+      arbitrage_log = f"Binance: {binance['price']}, Kucoin: {kucoin['price']}, Time Diff : {time_diff}, Price Diff : {price_diff} \n"
+      with open("arbitrageLog.txt","a") as file:
+                     file.write(arbitrage_log)
 
 
 load_dotenv() # take environment variables from .env
