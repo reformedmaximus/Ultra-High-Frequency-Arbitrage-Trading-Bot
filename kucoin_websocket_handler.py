@@ -11,7 +11,7 @@ logging.basicConfig(level=logging.INFO)
 
 # function to start the WebSocket Connection 
 
-async def start_kucoin_websocket(api):
+async def start_kucoin_websocket(api,update_price_and_compare_callback):
     logging.info("Requesting WebSocket token...")
     websocket_token = api.get_websocket_token()
     kucoin_ws_url = websocket_token['data']['instanceServers'][0]['endpoint'] + "?token=" + websocket_token['data']['token'] #this extracts the websocket endpoint wss://ws-api-spot.kucoin.com/ from the response you get when you request a websocket token + we add our own token ( cuz of dynamic endpoint )
@@ -26,7 +26,8 @@ async def start_kucoin_websocket(api):
                 message = await ws.recv() #listening for incoming messages recv is receive 
                 data = json.loads(message) #convert json string into nested python dictionnary ( collection of key-value pairs )
                 if 'data' in data and 'price' in data['data']:
-                  price = data['data']['price']
+                  price = float(data['data']['price'])
+                  update_price_and_compare_callback(price) # call the callback with the new price 
                   timestamp = datetime.datetime.now().isoformat()
                   log_message = f"{timestamp} KuCoin BTC/USDT price: {price}\n"
                   print(log_message)
