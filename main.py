@@ -37,13 +37,13 @@ def update_price_and_compare_callback(exchange, price):
       if kucoin['price']>=last_binance_price: 
          time_diff = (kucoin['time'] - last_binance_time).total_seconds()
          price_diff = kucoin ['price']-binance['price']
-         arbitrage_log = f"kucoin: {kucoin['price']}, binance: {binance['price']}, Time Diff : {time_diff}, Price Diff : {price_diff} \n"
+         arbitrage_log = f"kucoin: {kucoin['price']}, binance: {binance['price']}, Time Diff : {time_diff}, Price Diff : {price_diff} / Kucoin's btc price is higher than Binance's last current price \n"
          with open("arbitrageLog.txt","a") as file:
                      file.write(arbitrage_log) 
       elif  kucoin['price']<=last_binance_price:    
             time_diff = (last_binance_time - kucoin['time']).total_seconds()
             price_diff = binance ['price'] - kucoin['price']
-            arbitrage_log = f"binance: {binance['price']}, kucoin: {kucoin['price']}, Time Diff : {time_diff}, Price Diff : {price_diff} \n"
+            arbitrage_log = f"binance: {binance['price']}, kucoin: {kucoin['price']}, Time Diff : {time_diff}, Price Diff : {price_diff} / Binance last current btc price is higher than Kucoin's price \n"
             with open("arbitrageLog.txt","a") as file:
                      file.write(arbitrage_log)  
           
