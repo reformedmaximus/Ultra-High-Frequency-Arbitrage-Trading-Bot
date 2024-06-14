@@ -29,10 +29,10 @@ async def start_kucoin_websocket(api,update_price_and_compare_callback):
                   price = float(data['data']['price'])
                   update_price_and_compare_callback(price) # call the callback with the new price 
                   timestamp = datetime.datetime.now().isoformat()
-                  log_message = f"{timestamp} KuCoin BTC/USDT price: {price}\n"
-                  print(log_message)
-                  with open("bitcoin_price_data_kucoin.txt","a") as file:
-                     file.write(log_message)
+                  #log_message = f"{timestamp} KuCoin BTC/USDT price: {price}\n"
+                  #print(log_message)
+                  #with open("bitcoin_price_data_kucoin.txt","a") as file:
+                     #file.write(log_message)
                 #print("received message :", message).
                 #logging.info(f"********Received message from Kucoin********: {message}")
                   await handle_ping(ws, message)

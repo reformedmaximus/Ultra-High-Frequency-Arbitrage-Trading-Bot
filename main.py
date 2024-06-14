@@ -16,7 +16,7 @@ last_binance_price = None
 last_binance_time = None
 
 
-
+""""
 def update_price_and_compare_callback(exchange, price):
    global last_binance_price, last_binance_time 
     
@@ -46,7 +46,31 @@ def update_price_and_compare_callback(exchange, price):
             arbitrage_log = f"binance: {binance['price']}, kucoin: {kucoin['price']}, Time Diff : {time_diff}, Price Diff : {price_diff} / Binance last current btc price is higher than Kucoin's price \n"
             with open("arbitrageLog.txt","a") as file:
                      file.write(arbitrage_log)  
-          
+          """
+def update_price_and_compare_callback(exchange, price):
+    current_time = datetime.datetime.now()
+
+    # Update the latest prices and timestamp
+    latest_prices[exchange] = {"price": price, "time": current_time}
+
+    binance = latest_prices['binance']
+    kucoin = latest_prices['kucoin']
+
+    if binance['price'] is not None and kucoin['price'] is not None:
+        # Compare the prices and calculate the difference
+        if binance['price'] > kucoin['price']:
+            time_diff = (binance['time'] - kucoin['time']).total_seconds()
+            price_diff = binance['price'] - kucoin['price']
+            arbitrage_log = f"Binance: {binance['price']}, Kucoin: {kucoin['price']}, Time Diff: {time_diff}s, Price Diff: {price_diff} / Binance's price is higher than Kucoin's \n "
+        else:
+            time_diff = (kucoin['time'] - binance['time']).total_seconds()
+            price_diff = kucoin['price'] - binance['price']
+            arbitrage_log = f"Kucoin: {kucoin['price']}, Binance: {binance['price']}, Time Diff: {time_diff}s, Price Diff: {price_diff} / Kucoin's price is higher than Binance's\n"
+
+        print(arbitrage_log)
+        with open("arbitrageLog.txt", "a") as file:
+            file.write(arbitrage_log)
+
 
 
 load_dotenv() # take environment variables from .env

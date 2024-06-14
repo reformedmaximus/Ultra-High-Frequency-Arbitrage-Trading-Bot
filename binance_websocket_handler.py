@@ -16,10 +16,10 @@ async def start_binance_websocket(update_price_and_compare_callback):
                     price = float(data['p'])
                     update_price_and_compare_callback(price)
                     timestamp = datetime.datetime.now().isoformat()
-                    log_message = f"{timestamp} Binance BTC/USDT price: {price} \n"
-                    print(log_message)
-                    with open("bitcoin_price_data_binance.txt","a") as file:
-                         file.write(log_message)
+                    #log_message = f"{timestamp} Binance BTC/USDT price: {price} \n"
+                    #print(log_message)
+                    #with open("bitcoin_price_data_binance.txt","a") as file:
+                         #file.write(log_message)
                 #responding to pings manually 
                 if 'ping' in data:
                      await websocket.send(json.dumps({"pong": data['ping']}))
