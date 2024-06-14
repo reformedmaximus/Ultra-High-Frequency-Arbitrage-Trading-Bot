@@ -12,18 +12,41 @@ import datetime
 
 # global dictionary to hold the latest prices 
 latest_prices = { 'kucoin': {"price": None, "time": None}, 'binance': {"price": None, "time": None} }
+last_binance_price = None
+last_binance_time = None
+
+
 
 def update_price_and_compare_callback(exchange, price):
+   global last_binance_price, last_binance_time 
+    
+
    #update global dictionary with latest price 
    latest_prices[exchange]= {"price":price , "time": datetime.datetime.now()} 
    binance = latest_prices['binance']
    kucoin = latest_prices['kucoin']
+
+   if exchange =='binance':
+        #update last_binance price and last_binance_time if binance price changes 
+        if last_binance_price != binance['price']:
+             last_binance_price = binance['price']
+             last_binance_time = binance['time']
+
+
    if binance['price'] is not None and kucoin['price'] is not None:
-      time_diff =abs((binance['time'] - kucoin['time']).total_seconds())
-      price_diff = binance ['price']-kucoin['price']
-      arbitrage_log = f"Binance: {binance['price']}, Kucoin: {kucoin['price']}, Time Diff : {time_diff}, Price Diff : {price_diff} \n"
-      with open("arbitrageLog.txt","a") as file:
-                     file.write(arbitrage_log)
+      if kucoin['price']>=last_binance_price: 
+         time_diff = (kucoin['time'] - last_binance_time).total_seconds()
+         price_diff = kucoin ['price']-binance['price']
+         arbitrage_log = f"kucoin: {kucoin['price']}, binance: {binance['price']}, Time Diff : {time_diff}, Price Diff : {price_diff} \n"
+         with open("arbitrageLog.txt","a") as file:
+                     file.write(arbitrage_log) 
+      elif  kucoin['price']<=last_binance_price:    
+            time_diff = (last_binance_time - kucoin['time']).total_seconds()
+            price_diff = binance ['price'] - kucoin['price']
+            arbitrage_log = f"binance: {binance['price']}, kucoin: {kucoin['price']}, Time Diff : {time_diff}, Price Diff : {price_diff} \n"
+            with open("arbitrageLog.txt","a") as file:
+                     file.write(arbitrage_log)  
+          
 
 
 load_dotenv() # take environment variables from .env
