@@ -25,19 +25,20 @@ async def start_kucoin_websocket(api,update_price_and_compare_callback):
             try:
                 message = await ws.recv() #listening for incoming messages recv is receive 
                 data = json.loads(message) #convert json string into nested python dictionnary ( collection of key-value pairs )
+                #if isinstance(data, dict)
                 if 'data' in data and 'price' in data['data']:
-                  price = float(data['data']['price'])
-                  update_price_and_compare_callback(price) # call the callback with the new price 
-                  timestamp = datetime.datetime.now().isoformat()
+                   price = float(data['data']['price'])
+                   update_price_and_compare_callback(price) # call the callback with the new price 
+                   timestamp = datetime.datetime.now().isoformat()
                   #log_message = f"{timestamp} KuCoin BTC/USDT price: {price}\n"
                   #print(log_message)
                   #with open("bitcoin_price_data_kucoin.txt","a") as file:
                      #file.write(log_message)
                 #print("received message :", message).
                 #logging.info(f"********Received message from Kucoin********: {message}")
-                  await handle_ping(ws, message)
+                   await handle_ping(ws, message)
                 else:
-                    logging.error(f"unexpected message structure : {data}")
+                  logging.error(f"unexpected message structure : {data}")
                      
             except websockets.exceptions.ConnectionClosed:
                 print("Connection closed, attempting to reconnect...")    
