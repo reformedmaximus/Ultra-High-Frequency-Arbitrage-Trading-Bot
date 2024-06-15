@@ -36,7 +36,7 @@ async def start_kucoin_websocket(api,update_price_and_compare_callback):
                      #file.write(log_message)
                 #print("received message :", message).
                 #logging.info(f"********Received message from Kucoin********: {message}")
-                   await handle_ping(ws, message)
+                   await handle_ping(ws, data)
                 else:
                   logging.error(f"unexpected message structure : {data}")
                      
@@ -57,13 +57,30 @@ async def subscribe(ws, topic):
     await ws.send(message)
     print(f"subscribed to {topic}")
 
-async def handle_ping(ws, message): 
+"""async def handle_ping(ws, message): 
     if message.get('type') == 'pong': 
         print("pong received")
     if time.time()-handle_ping.last_ping > 30: #send ping every 30 seconds 
         await ws.send(json.dumps({"id": str(int(time.time())), "type": "ping"})) 
         handle_ping.last_ping = time.time()
 
+handle_ping.last_ping = time.time()
+"""
+"""async def handle_ping(ws, message):
+    if isinstance(message, dict):
+        if 'type' in message and message['type'] == 'pong':
+            print("pong received")
+        if time.time() - handle_ping.last_ping > 30:  # send ping every 30 seconds
+            await ws.send(json.dumps({"id": str(int(time.time())), "type": "ping"}))
+            handle_ping.last_ping = time.time()"""
+
+async def handle_ping(ws, data): 
+    if data.get('type') == 'pong': 
+        print("pong received")
+    if time.time()-handle_ping.last_ping > 30: #send ping every 30 seconds 
+        await ws.send(json.dumps({"id": str(int(time.time())), "type": "ping"})) 
+        handle_ping.last_ping = time.time()
+        
 handle_ping.last_ping = time.time()
 
 async def on_message (ws, message):
