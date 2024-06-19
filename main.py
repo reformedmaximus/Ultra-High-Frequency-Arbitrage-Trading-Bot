@@ -7,49 +7,48 @@ from kucoin_apis import KuCoinAPI
 import logging
 import datetime
 import psycopg2
+from datetime import datetime, timezone
+
 
 #INFO:root:Received message: {'id': 's13u6l50tc', 'type': 'welcome'} welcome message when websocket connection is successful from kucoin
 #INFO:root:Received message: {'id': '1717989479', 'type': 'ack'} ack message when topic subscription is successful from kucoin
-try:
+
     
 #database connection setup 
-    conn = psycopg2.connect("dbname=trading_data user=postgres password=mootaz2002")
-   # Open a cursor to perform database operations
-    cur = conn.cursor()
+conn = psycopg2.connect("dbname=trading_data user=postgres password=mootaz2002")
+cur = conn.cursor()
 
-    # Execute a query
-    cur.execute("SELECT version();")
-
-    # Retrieve query results
-    version = cur.fetchone()
-
-    # Output the result of the query
-    print("Connected to PostgreSQL database version:", version)
-
-    # Close the cursor and connection to so the server can allocate
-    # bandwidth to other requests
-    cur.close()
-    conn.close()
-
-except psycopg2.OperationalError as e:
-    print("Unable to connect:", e)
-except Exception as e:
-    print("An error occurred:", e)
-finally:
-    if conn is not None:
-        conn.close()
+#function to insert data into database 
+def insert_data(time, symbol,price_kucoin, price_binance):
+    cur.execute(
+        "INSERT INTO price_data (time, symbol, price_kucoin,price_binance) VALUES (%s,%s,%s,%s)",
+        (time,symbol,price_kucoin,price_binance)
+    )
+    conn.commit()
+    
 
 
-
-"""
 # global dictionary to hold the latest prices 
 latest_prices = { 'kucoin': {"price": None, "time": None}, 'binance': {"price": None, "time": None} }
 binance_snapshot = {"price": None, "time": None}
 
-def update_price_and_compare_callback(exchange, price):
-    
-    current_time = datetime.datetime.now()
 
+def finalize_insertion():
+    current_time = datetime.now(timezone.utc)
+    
+    #checking if both exchanges sent prices
+    if latest_prices['kucoin']['price'] is not None and latest_prices['binance']['price'] is not None:
+        insert_data(current_time,"BTC-USDT",latest_prices['kucoin']['price'],latest_prices['binance']['price'])
+
+def update_price_and_compare_callback(exchange, price):
+    finalize_insertion()
+    current_time = datetime.now(timezone.utc)
+
+
+
+
+
+    #normal data tracking and price difference starts from here 
     # Update the latest prices and timestamp
     latest_prices[exchange] = {"price": price, "time": current_time}
     # retrieve the latest prices
@@ -66,10 +65,11 @@ def update_price_and_compare_callback(exchange, price):
         kucoin_price_at_snapshot=latest_prices['kucoin']['price']
         if kucoin_price_at_snapshot is not None:
             price_diff_at_snapshot= price - kucoin_price_at_snapshot
-            print(f"Snapshot set at Binance with price {price}, Kucoin price at snapshot with price {kucoin_price_at_snapshot}, Price Difference : {price_diff_at_snapshot}")
+            price_data= f"Snapshot set at Binance with price {price}, Kucoin price at snapshot with price {kucoin_price_at_snapshot}, Price Difference : {price_diff_at_snapshot} \n"
+            with open("price_data.txt", "a") as file:
+                file.write(price_data)
 
-
-    
+     #kucoin or binance['price'] is the current updated price
      #check kucoin's price against the binance snapshot 
     if kucoin['price'] is not None and binance_snapshot['price'] is not None:
      if kucoin['price'] >= binance_snapshot['price']:
@@ -82,8 +82,9 @@ def update_price_and_compare_callback(exchange, price):
         # update the Binance snapshot to the latest price and time so we can continue the cycle of tracking
     binance_snapshot['price']=binance['price']
     binance_snapshot['time']=binance['time']    
+
       
-"""
+
 
 load_dotenv() # take environment variables from .env
 #hiding sensitive info for now in case I make this project public in the future 
