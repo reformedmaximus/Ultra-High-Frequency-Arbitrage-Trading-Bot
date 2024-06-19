@@ -26,10 +26,13 @@ async def start_kucoin_websocket(api,update_price_and_compare_callback):
                 message = await ws.recv() #listening for incoming messages recv is receive 
                 data = json.loads(message) #convert json string into nested python dictionnary ( collection of key-value pairs )
                 
+                if 'type' in data and data['type'] in ['pong','ack','welcome']:
+                    logging.info(f"Received {data['type']} message: {data}")
+                    continue
+                
                 if 'data' in data and 'price' in data['data']:
                    price = float(data['data']['price'])
-                   update_price_and_compare_callback(price) # call the callback with the new price 
-                   timestamp = datetime.datetime.now().isoformat()
+                   update_price_and_compare_callback(price) # call the callback with the new price  
                 else:
                     logging.error(f"unexpected message structure : {data}")
                        

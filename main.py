@@ -32,21 +32,9 @@ def insert_data(time, symbol,price_kucoin, price_binance):
 latest_prices = { 'kucoin': {"price": None, "time": None}, 'binance': {"price": None, "time": None} }
 binance_snapshot = {"price": None, "time": None}
 
-
-def finalize_insertion():
-    current_time = datetime.now(timezone.utc)
-    
-    #checking if both exchanges sent prices
-    if latest_prices['kucoin']['price'] is not None and latest_prices['binance']['price'] is not None:
-        insert_data(current_time,"BTC-USDT",latest_prices['kucoin']['price'],latest_prices['binance']['price'])
-
 def update_price_and_compare_callback(exchange, price):
-    finalize_insertion()
+   
     current_time = datetime.now(timezone.utc)
-
-
-
-
 
     #normal data tracking and price difference starts from here 
     # Update the latest prices and timestamp
@@ -57,31 +45,51 @@ def update_price_and_compare_callback(exchange, price):
     
 
     # set a binance snapshot in order to compare kucoin's current & real time updated price to it 
-    if exchange == 'binance' and binance_snapshot['price'] is None:
-        binance_snapshot['price']= price
-        binance_snapshot['time']= current_time
-
-       # get the current kucoin price at the time we took the binance snapshot 
+    if exchange == 'binance':
+        binance_snapshot['price'] = price
+        binance_snapshot['time'] = current_time
+        
+    elif exchange =='kucoin' and binance_snapshot['price'] is not None: # checking only when binance has a valid snapshot
+        price_data= f"Snapshot set at Binance with price {binance_snapshot['price']}, Kucoin price at snapshot with price {price} \n"
+        with open("price_data.txt", "a") as file:
+            file.write(price_data)
+        #price_tolerance = 0.1       
+        #if abs(price - binance_snapshot['price']) <= price_tolerance:
+        if price >= binance_snapshot['price']:
+            time_diff = ( current_time - binance_snapshot['time']).total_seconds()
+            arbitrage_log = f"time duration that took Kucoin to catchup to Binance is {time_diff} seconds \n"
+            print(arbitrage_log)
+            with open("arbitrageLog.txt", "a") as file:
+             file.write(arbitrage_log) 
+             
+                 # update the Binance snapshot to the latest price and time so we can continue the cycle of tracking
+             binance_snapshot['price']=binance['price']
+             binance_snapshot['time']=binance['time']
+     
+             
+    #checking if both exchanges sent prices and inserting in the database
+    if latest_prices['kucoin']['price'] is not None and latest_prices['binance']['price'] is not None:
+        insert_data(current_time,"BTC-USDT",latest_prices['kucoin']['price'],latest_prices['binance']['price'])         
+         
+    """ # get the current kucoin price at the time we took the binance snapshot 
         kucoin_price_at_snapshot=latest_prices['kucoin']['price']
         if kucoin_price_at_snapshot is not None:
-            price_diff_at_snapshot= price - kucoin_price_at_snapshot
+            price_diff_at_snapshot= price - kucoin_price_at_snapshot #price is the binance snapshot price
             price_data= f"Snapshot set at Binance with price {price}, Kucoin price at snapshot with price {kucoin_price_at_snapshot}, Price Difference : {price_diff_at_snapshot} \n"
             with open("price_data.txt", "a") as file:
-                file.write(price_data)
+             file.write(price_data)"""
 
      #kucoin or binance['price'] is the current updated price
      #check kucoin's price against the binance snapshot 
-    if kucoin['price'] is not None and binance_snapshot['price'] is not None:
+"""  if kucoin['price'] is not None and binance_snapshot['price'] is not None:
      if kucoin['price'] >= binance_snapshot['price']:
            time_diff = ( current_time - binance_snapshot['time']).total_seconds()
            arbitrage_log = f"time duration that took Kucoin to catchup to Binance is {time_diff} \n"
            print(arbitrage_log)
            with open("arbitrageLog.txt", "a") as file:
-            file.write(arbitrage_log)
+            file.write(arbitrage_log)"""
 
-        # update the Binance snapshot to the latest price and time so we can continue the cycle of tracking
-    binance_snapshot['price']=binance['price']
-    binance_snapshot['time']=binance['time']    
+        
 
       
 
