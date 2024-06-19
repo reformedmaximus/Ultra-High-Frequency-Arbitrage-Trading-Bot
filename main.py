@@ -6,11 +6,42 @@ import asyncio
 from kucoin_apis import KuCoinAPI
 import logging
 import datetime
+import psycopg2
+
+#INFO:root:Received message: {'id': 's13u6l50tc', 'type': 'welcome'} welcome message when websocket connection is successful from kucoin
+#INFO:root:Received message: {'id': '1717989479', 'type': 'ack'} ack message when topic subscription is successful from kucoin
+try:
+    
+#database connection setup 
+    conn = psycopg2.connect("dbname=trading_data user=postgres password=mootaz2002")
+   # Open a cursor to perform database operations
+    cur = conn.cursor()
+
+    # Execute a query
+    cur.execute("SELECT version();")
+
+    # Retrieve query results
+    version = cur.fetchone()
+
+    # Output the result of the query
+    print("Connected to PostgreSQL database version:", version)
+
+    # Close the cursor and connection to so the server can allocate
+    # bandwidth to other requests
+    cur.close()
+    conn.close()
+
+except psycopg2.OperationalError as e:
+    print("Unable to connect:", e)
+except Exception as e:
+    print("An error occurred:", e)
+finally:
+    if conn is not None:
+        conn.close()
 
 
-#INFO:root:Received message: {'id': 's13u6l50tc', 'type': 'welcome'} welcome message when websocket connection is successfull from kucoin
-#INFO:root:Received message: {'id': '1717989479', 'type': 'ack'} ack message when topic subscription is successfull from kucoin
 
+"""
 # global dictionary to hold the latest prices 
 latest_prices = { 'kucoin': {"price": None, "time": None}, 'binance': {"price": None, "time": None} }
 binance_snapshot = {"price": None, "time": None}
@@ -52,7 +83,7 @@ def update_price_and_compare_callback(exchange, price):
     binance_snapshot['price']=binance['price']
     binance_snapshot['time']=binance['time']    
       
-
+"""
 
 load_dotenv() # take environment variables from .env
 #hiding sensitive info for now in case I make this project public in the future 
